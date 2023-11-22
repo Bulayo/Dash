@@ -9,7 +9,13 @@ def draw_img():
     if (START_GAME is False):
         WIN.blit(logo_surf, logo_rect)
         WIN.blit(button_surf, button_rect)
-    WIN.blit(player_surf, player_rect)
+    WIN.blit(ufo_portal_surf, ufo_portal_rect)
+
+    if CUBE:
+        WIN.blit(player_surf, player_rect)
+
+    elif UFO:
+        WIN.blit(ufo_surf, ufo_rect)
     
 
 def bg_scroll():
@@ -36,18 +42,48 @@ def bg_scroll():
   
 
 def obj_movement():
-    pass
+    
+    if (START_GAME is True):
+        speed = 3
+        ufo_portal_rect.x -= speed
+
+
   
 def player_movement():
     global player_gravity
 
-    player_gravity += 0.7
-    if (player_gravity > 5):
-        player_gravity = 5
+    player_gravity += 1.2
+    if (player_gravity > 7):
+        player_gravity = 7
     player_rect.y += int(player_gravity)
 
     if (player_rect.bottom >= 400):
         player_rect.bottom = 400
+
+
+def ufo_p():
+    global CUBE
+    global UFO
+
+    if (ufo_portal_rect.colliderect(player_rect)):
+        CUBE = False
+        UFO = True
+
+
+def ufo_movement():
+    global ufo_gravity
+
+    ufo_gravity += 0.5
+    if (ufo_gravity > 5):
+        ufo_gravity = 5
+    ufo_rect.y += int(ufo_gravity)
+    
+    if (ufo_rect.bottom >= 400):
+        ufo_rect.bottom = 400
+
+    elif (ufo_rect.top <= 0):
+        ufo_rect.top = 0
+
 
 pygame.init()
 
@@ -82,10 +118,22 @@ ground_rect_2 = ground_surf.get_rect(topleft= (800, 400))
 button_surf = pygame.image.load("assets/play-button.png").convert_alpha()
 button_rect = button_surf.get_rect(center= (800/2, 500/2))
 
+CUBE = True
+UFO = False
+
 player_surf = pygame.image.load("assets/p-sprite3.png").convert_alpha()
 player_rect = player_surf.get_rect(topleft= (20, 400))
 player_gravity = 0
 
+ufo_surf = pygame.image.load("assets/ufo.png").convert_alpha()
+ufo_rect = ufo_surf.get_rect(topleft= (20, 400))
+ufo_gravity = 0
+
+ufo_portal_surf = pygame.image.load("assets/ufo-portal.png").convert_alpha()
+ufo_portal_rect = ufo_portal_surf.get_rect(topleft= (1200, 50))
+
+cube_portal_surf = pygame.image.load("assets/cube-portal.png").convert_alpha()
+cube_portal_rect = cube_portal_surf.get_rect(topleft= (20, 400))
 
 while True:
 
@@ -103,16 +151,31 @@ while True:
                 MENU_THEME.fadeout(1000)
                 GAME_MUSIC.play()
 
-        elif (event.type == pygame.KEYDOWN and player_rect.bottom >= 380):
+        elif (event.type == pygame.KEYDOWN and player_rect.bottom >= 380 and CUBE):
             if (event.key == pygame.K_w or event.key == pygame.K_SPACE or event.key == pygame.K_UP):
                 player_gravity = -15
+
+        elif (event.type == pygame.KEYDOWN and UFO):
+            if (event.key == pygame.K_w or event.key == pygame.K_SPACE or event.key == pygame.K_UP):
+                ufo_gravity = -10
         
-        if (event.type == pygame.MOUSEBUTTONDOWN and player_rect.bottom >= 380):
+        
+        if (event.type == pygame.MOUSEBUTTONDOWN and player_rect.bottom >= 380 and CUBE):
             player_gravity = -15
 
+        elif (event.type == pygame.MOUSEBUTTONDOWN and player_rect.bottom >= 380 and UFO):
+            ufo_gravity = -10
 
+
+    
     draw_img()
     bg_scroll()
-    player_movement()
+    if CUBE:
+        player_movement()
+
+    if UFO:
+        ufo_movement()
+    ufo_p()
+    obj_movement()
 
     pygame.display.update()
